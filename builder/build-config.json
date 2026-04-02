@@ -1,0 +1,15 @@
+{
+  "appName": "CustomApp",
+  "applicationId": "com.custom.app",
+  "config": {
+    "url": "https://store.pvapps.space/",
+    "loaderConfig": {
+      "useLoader": true,
+      "strategy": "initial",
+      "color": "#45be4c",
+      "loaderBgColor": "white"
+    },
+    "css": "",
+    "enabledPullToRefresh": true
+  }
+}
