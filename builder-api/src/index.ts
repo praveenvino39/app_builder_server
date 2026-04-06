@@ -12,7 +12,7 @@ app.use(express.json());
 // CONFIG
 const PORT = process.env.PORT || 3000;
 const CONCURRENCY_LIMIT = parseInt(process.env.CONCURRENCY || '1');
-const BUILDER_PATH = path.resolve(__dirname, '../../builder');
+const BUILDER_PATH = path.resolve(__dirname, '../../AppBase');
 
 // IN-MEMORY STORAGE
 interface BuildJob {
@@ -49,18 +49,23 @@ const processQueue = async () => {
 
     try {
         // 1. Create a temporary config file for this build instance
-        const tempConfigDir = path.join(BUILDER_PATH, 'temp-configs');
+        const tempConfigDir = path.join(BUILDER_PATH, 'builds');
         if (!fs.existsSync(tempConfigDir)) fs.mkdirSync(tempConfigDir);
 
-        const configPath = path.join(tempConfigDir, `config-${buildId}.json`);
+        const configPath = path.join(tempConfigDir, `buildConfig.json`);
         fs.writeFileSync(configPath, JSON.stringify(job.config, null, 2));
 
         // 2. Execute the build script
         // Note: We use the absolute path to scripts/build.js inside the builder directory
         const scriptPath = path.join(BUILDER_PATH, 'scripts/build.js');
-        const command = `node "${scriptPath}" "${configPath}"`;
+        // console.log("CONFIG", JSON.stringify(JSON.stringify(job.config)));
+        const command = `node "${scriptPath}" \'${JSON.stringify(job.config)}\' ${job.id}`;
+
+        console.log(command);
+
 
         exec(command, { cwd: BUILDER_PATH }, (error, stdout, stderr) => {
+            console.log("OUT ", stdout)
             job.endTime = Date.now();
 
             // Clean up temp config
@@ -80,7 +85,7 @@ const processQueue = async () => {
                 // Note: In a production environment, you'd want to MOVE the APK to a unique storage
                 // to prevent the next build from overwriting it.
                 // For this simple API, we'll keep it there but warn about concurrency.
-                const finalApkPath = path.join(tempConfigDir, `app-${buildId}.apk`);
+                const finalApkPath = path.join(tempConfigDir, `${job.config.appName}-${buildId}.apk`);
                 if (fs.existsSync(job.apkPath)) {
                     fs.copyFileSync(job.apkPath, finalApkPath);
                     job.apkPath = finalApkPath;
@@ -92,6 +97,7 @@ const processQueue = async () => {
         });
 
     } catch (e: any) {
+        console.log(e);
         job.status = 'FAILED';
         job.error = e.message;
         activeBuilds--;
@@ -111,9 +117,11 @@ app.get("/health", (req, res) => {
 app.post("/api/build", (req, res) => {
     const configData = req.body;
 
-    if (!configData || !configData.appName || !configData.applicationId || !configData.config) {
-        return res.status(400).json({ 
-            error: "Invalid configuration. 'appName', 'applicationId', and 'config' are all required." 
+    const isValid = (val: any) => val && val !== 'undefined';
+
+    if (!isValid(configData) || !isValid(configData.appName) || !isValid(configData.applicationId)) {
+        return res.status(400).json({
+            error: "Invalid configuration. 'appName', 'applicationId', and 'config' are all required and must not be 'undefined'."
         });
     }
 
