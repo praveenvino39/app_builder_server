@@ -1,4 +1,9 @@
 node_modules/
-android/build
+.turbo
 .yarn
 .yarn/cache
+*.log
+dist/
+build/
+.next/
+.DS_Store

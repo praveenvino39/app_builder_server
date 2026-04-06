@@ -1,0 +1,36 @@
+{
+  "appName": "Praveen",
+  "primaryColor": "#3B82F6",
+  "applicationId": "com.test.app",
+  "url": "https://store.pvapps.space",
+  "loaderConfig": {
+    "useLoader": false,
+    "strategy": "initial",
+    "color": "#3B82F6",
+    "loaderBgColor": "white"
+  },
+  "css": "",
+  "enabledPullToRefresh": true,
+  "navigationConfig": {
+    "showAppbar": true,
+    "showPageTitle": false,
+    "navigationType": "bottom-tab",
+    "navigations": [
+      {
+        "label": "Home",
+        "url": "https://store.pvapps.space",
+        "icon": "home"
+      },
+      {
+        "label": "Profile",
+        "url": "https://store.pvapps.space/profile",
+        "icon": "user"
+      },
+      {
+        "label": "Authors",
+        "url": "https://store.pvapps.space/authors",
+        "icon": "user"
+      }
+    ]
+  }
+}
